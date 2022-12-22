@@ -1,0 +1,98 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - RELACIONAMENTO ONE-TO-MANY - INSERÇÃO
+====================================================================================================
+
+
+DTO
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantDTO.java' no pacote 'com.ctseducare.condominium.dto'
+
+public class TenantDTO {
+
+    private Integer id;
+    private String name;
+
+    // Getters and setters
+    
+}
+
+
+- Criar o arquivo 'TenantDependentDTO.java' no pacote 'com.ctseducare.condominium.dto'
+
+public class TenantDependentDTO {
+
+    private Integer id;
+    private String name;
+
+    // Getters and setters
+}
+
+
+Service
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantService.java' no pacote 'com.ctseducare.condominium.service'
+
+- Adicionar o método 'insert' no arquivo 'TenantService.java'
+
+public class TenantService {
+
+    private TenantDAO dao;
+
+    TenantService() {
+        dao = new TenantDAO();
+    }
+
+    public TenantDTO insert(TenantDTO dto) throws Exception {
+        Tenant tenant = dtoToModel(dto);
+        dao.insert(tenant);
+        dto.setId(tenant.getId());
+        return dto;
+    }
+
+    private Tenant dtoToModel(TenantDTO dto) {
+        Tenant tenant = new Tenant();
+        tenant.setName(dto.getName());
+
+        Set<TenantDependent> dependents = dto.getDependents().stream().map(d -> {
+            TenantDependent td = new TenantDependent();
+            td.setName(d.getName());
+            td.setTenant(tenant);
+            return td;
+        }).collect(Collectors.toSet());
+
+        tenant.setDependents(dependents);
+
+        return tenant;
+    }
+
+}
+
+
+Testando a inserção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantServiceInsertTest.java'
+
+public class TenantServiceInsertTest {
+
+    public static void main(String[] args) {
+        TenantDependentDTO td1 = new TenantDependentDTO();
+        td1.setName("Daniele");
+        TenantDependentDTO td2 = new TenantDependentDTO();
+        td2.setName("Talita");
+
+        TenantDTO t = new TenantDTO();
+        t.setName("Eros Vitor");
+        t.getDependents().add(td1);
+        t.getDependents().add(td2);
+
+        TenantService service = new TenantService();
+        try {
+            service.insert(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+

@@ -1,0 +1,15 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - ENTITYMANAGER
+====================================================================================================
+
+
+Alterando Hibernate para JPA
+----------------------------------------------------------------------------------------------------
+- Substituir o arquivo 'hibernate.properties' pelo arquivo 'persistence.xml'
+
+- Substituir a classe 'HibernateUtils.java' pela classe 'JPAUtils.java'
+
+- Substituir o 'DAO' atual pelo 'DAO' do folder 'entitymanager'
+
+OBS: Todos os arquivos estão no folder 'entitymanager'.
+

@@ -1,0 +1,111 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - INSERÇÃO
+====================================================================================================
+
+
+Método para inserir dados
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'inserir' na classe 'CondominiumDAO.java'
+
+import com.ctseducare.condominium.hibernate.HibernateUtils;
+import com.ctseducare.condominium.model.Condominio;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+public class CondominiumDAO {
+
+    public void insert(Condominium condominium) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            session.save(condominium);
+            session.flush();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+    }
+
+}
+
+
+DTO
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.dto'
+
+- Criar o arquivo 'CondominiumDTO.java'
+
+public class CondominiumDTO {
+
+    private Integer id;
+    private String name;
+    
+    // Getters and Setters
+    
+}
+
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.service'
+
+- Criar o arquivo 'CondominiumService.java'
+
+public class CondominiumService {
+
+    public CondominiumDAO dao;
+
+    CondominiumService() {
+        dao = new CondominiumDAO();
+    }
+
+    public CondominiumDTO insert(CondominiumDTO dto) throws Exception {
+        Condominium condominium = new Condominium();
+        condominium.setName(dto.getName());
+
+        dao.insert(condominium);
+
+        dto.setId(condominium.getId());
+        return dto;
+    }
+    
+}
+
+
+Testando a inserção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.service' no folder '/test/java'
+
+- Criar o arquivo 'CondominiumServiceInsertTest.java'
+
+public class CondominiumServiceInsertTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setName("Condomínio Jatobá");
+
+        CondominiumService service = new CondominiumService();
+        try {
+            service.insert(dto);
+            System.out.println(dto.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+- Acessar o console do servidor do MySQL e verificar se os dados do condomínio foram inseridos.
+
+  mysql> select * from condominium;
+
+
