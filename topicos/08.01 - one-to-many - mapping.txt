@@ -1,0 +1,82 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - ONE-TO-MANY - MAPPING
+====================================================================================================
+
+
+Mapeando o relacionamento
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'Tenant.java' no pacote 'com.ctseducare.condominium.entity'
+
+@Entity
+@Table(name = "tenants")
+public class Tenant implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "name", length = 80, nullable = false)
+    private String name;
+    @Column(name = "id_condominium", nullable = false)
+    private Integer idCondominium;
+    @OneToMany(mappedBy = "tenant", cascade = CascadeType.PERSIST)
+    private Set<TenantDependent> dependents = new HashSet<>(0);
+
+    // Getters and Setters
+    
+    // Equals and Hashcode
+    
+}
+
+
+- Criar o arquivo 'TenantDependent.java' no pacote 'com.ctseducare.condominium.entity'
+
+@Entity
+@Table(name="tenants_dependents")
+public class TenantDependent implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name="name", length = 80, nullable = false)
+    private String name;
+    @ManyToOne
+    @JoinColumn(name = "id_tenant")
+    private Tenant tenant;
+
+    // Getters and Setters
+    
+    // Equals and Hashcode
+    // Obs: Incluir os atributos id e name, caso contrário, a inserção automática do tenant e seus dependentes vai falhar.
+
+}
+
+
+Disponibilizando o mapeamento
+----------------------------------------------------------------------------------------------------
+- Adicionar as linhas no arquivo 'HibernateUtils.java'
+
+  ...
+  metadataSources.addAnnotatedClass(Tenant.class);
+  metadataSources.addAnnotatedClass(TenantDependent.class);
+  ...
+
+
+Criando o DAO
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantDAO.java' no pacote 'com.ctseducare.condominium.dao'
+
+public class TenantDAO extends DAO<Tenant> {
+
+    public TenantDAO() { super(Tenant.class); }
+    
+}
+
+- Criar o arquivo 'TenantDependentDAO.java' no pacote 'com.ctseducare.condominium.dao'
+
+public class TenantDependentDAO extends DAO<TenantDependent> {
+
+    public TenantDependentDAO() { super(TenantDependent.class); }
+
+}
+
+

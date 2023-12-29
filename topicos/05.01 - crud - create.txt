@@ -1,0 +1,106 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - CRUD - CREATE
+====================================================================================================
+
+
+Método para criar um condomínio
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'create' na classe 'CondominiumDAO.java'
+
+public class CondominiumDAO {
+
+    public void create(Condominium condominium) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            session.persist(condominium);
+            session.flush();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+    }
+
+}
+
+
+DTO
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.dto'
+
+- Criar o arquivo 'CondominiumDTO.java'
+
+public class CondominiumDTO {
+
+    private Integer id;
+    private String name;
+    
+    // Getters and Setters
+    
+}
+
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.service'
+
+- Criar o arquivo 'CondominiumService.java'
+
+public class CondominiumService {
+
+    private final CondominiumDAO dao;
+
+    CondominiumService() {
+        dao = new CondominiumDAO();
+    }
+
+    public CondominiumDTO create(CondominiumDTO dto) throws Exception {
+        Condominium condominium = new Condominium();
+        condominium.setName(dto.getName());
+
+        dao.create(condominium);
+
+        dto.setId(condominium.getId());
+        return dto;
+    }
+    
+}
+
+
+Testando a inserção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.service' no folder '/test/java'
+
+- Criar o arquivo 'CondominiumServiceCreateTest.java'
+
+public class CondominiumServiceCreateTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setName("Condomínio Jatobá");
+
+        CondominiumService service = new CondominiumService();
+        try {
+            service.create(dto);
+            System.out.println(dto.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+- Acessar o console do servidor do MySQL e verificar se os dados do condomínio foram inseridos.
+
+  mysql> select * from condominium;
+
+

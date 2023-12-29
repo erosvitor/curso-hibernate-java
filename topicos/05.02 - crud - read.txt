@@ -1,0 +1,62 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - CRUD - READ
+====================================================================================================
+
+
+Método para ler todos os condomínios
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'readAll' na classe 'CondominiumDAO.java'
+
+    ...
+    public List<Condominium> readAll() throws Exception {
+        List<Condominium> condominiums;
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        try {
+            condominiums = session.createSelectionQuery("FROM Condominium", Condominium.class).list();
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+        return condominiums;
+    }
+    ...
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'readAll' na classe 'CondominiumService.java'
+
+    ...
+    public List<CondominiumDTO> readAll() throws Exception {
+        List<Condominium> condominiums = dao.readAll();
+        return condominiums.stream().map( c -> {
+           CondominiumDTO dto = new CondominiumDTO();
+           dto.setId(c.getId());
+           dto.setName(c.getName());
+           return dto;
+        }).toList();
+    }
+    ...
+
+
+Testando a seleção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'CondominiumServiceReadTest.java'
+
+public class CondominiumServiceReadTest {
+
+    public static void main(String[] args) {
+        CondominiumService service = new CondominiumService();
+        try {
+            List<CondominiumDTO> condominiums = service.readAll();
+            condominiums.stream().forEach( c -> {
+                System.out.println(c.getId() + ", " + c.getName());
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+

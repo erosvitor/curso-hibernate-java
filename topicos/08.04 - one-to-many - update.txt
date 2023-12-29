@@ -1,0 +1,145 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - ONE-TO-MANY - UPDATE
+====================================================================================================
+
+
+TenantDAO
+----------------------------------------------------------------------------------------------------
+- Adicionar o metódo 'updateWithoutTransaction' na classe 'TenantDAO'
+
+    ...
+    public Tenant updateWithoutTransaction(Tenant tenant, Session session) throws Exception {
+        try {
+            session.update(tenant);
+            session.flush();
+            return tenant;
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+    ...
+
+
+TenantDependentDAO
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'readByTenantId' na classe 'TenantDependentDAO'
+
+    ...
+    public List<TenantDependent> readByTenantId(Integer idTenant) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        List<TenantDependent> dependents;
+        try {
+            dependents = session.createQuery("FROM TenantDependent WHERE tenant.id = " + idTenant, TenantDependent.class).list();
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+        return dependents;
+    }
+    ...
+    
+
+- Adicionar os metódos 'insertWithoutTransaction' e 'deleteWithoutTransaction' na classe 'TenantDependentDAO'
+
+    ...
+    public TenantDependent insertWithoutTransaction(TenantDependent dependent, Session session) throws Exception {
+        try {
+            session.persist(dependent);
+            session.flush();
+            return dependent;
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+
+    public TenantDependent deleteWithoutTransaction(TenantDependent dependent, Session session) throws Exception {
+        try {
+            session.remove(dependent);
+            session.flush();
+            return dependent;
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+    ...
+
+
+TenantService
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'update' na classe 'TenantService'
+
+    ...
+    public TenantDTO update(TenantDTO dto) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            Tenant tenant = new Tenant();
+            tenant.setId(dto.getId());
+            tenant.setName(dto.getName());
+            tenant.setIdCondominium(dto.getIdCondominium());
+            dao.updateWithoutTransaction(tenant, session);
+
+            TenantDependentDAO dependentDAO = new TenantDependentDAO();
+            List<TenantDependent> dependents = dependentDAO.readByTenantId(tenant.getId());
+            for (TenantDependent d : dependents) {
+                dependentDAO.deleteWithoutTransaction(d, session);
+            }
+
+            for (TenantDependentDTO d : dto.getDependents()) {
+                TenantDependent dependent = new TenantDependent();
+                dependent.setName(d.getName());
+                dependent.setTenant(tenant);
+                dependentDAO.insertWithoutTransaction(dependent, session);
+            }
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+        return dto;
+    }
+    ...
+
+
+Testando a alteração dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantServiceUpdateTest.java'
+
+public class TenantServiceUpdateTest {
+
+    public static void main(String[] args) {
+        TenantDependentDTO td1 = new TenantDependentDTO();
+        td1.setName("Dependente 1");
+        TenantDependentDTO td2 = new TenantDependentDTO();
+        td2.setName("Dependente 2");
+
+        TenantDTO tenantNew = new TenantDTO();
+        tenantNew.setName("Titular");
+        tenantNew.getDependents().add(td1);
+        tenantNew.getDependents().add(td2);
+        tenantNew.setIdCondominium(1);  // 1 - DEFAULT
+
+        TenantService service = new TenantService();
+        try {
+            TenantDTO tenantSaved = service.create(tenantNew);
+
+            tenantSaved.setName("Titular Master");
+            TenantDependentDTO td = new TenantDependentDTO();
+            td.setName("Dependente 3");
+            tenantSaved.getDependents().add(td);
+
+            service.update(tenantSaved);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+

@@ -1,0 +1,69 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - CRUD - DELETE
+====================================================================================================
+
+
+Método para excluir dados
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'delete' na classe 'CondominiumDAO.java'
+
+    ...
+    public void delete(Condominium condominium) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            session.remove(condominium);
+            session.flush();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+    }
+    ...
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'delete' na classe 'CondominiumService.java'
+
+    ...
+    public void delete(CondominiumDTO dto) throws Exception {
+        Condominium condominium = new Condominium();
+        condominium.setId(dto.getId());
+        condominium.setName(dto.getName());
+
+        dao.delete(condominium);
+    }
+    ...
+
+
+Testando a exclusão dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'CondominiumServiceDeleteTest.java'
+
+public class CondominiumServiceDeleteTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setId(2);
+        dto.setName("Condomínio Residencial Jatobá");
+
+        CondominiumService service = new CondominiumService();
+        try {
+            service.delete(dto);
+            System.out.println("Excluído!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+

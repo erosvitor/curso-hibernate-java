@@ -1,0 +1,85 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - MANY-TO-MANY - CREATE
+====================================================================================================
+
+
+DTO
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'SyndicDTO.java' no pacote 'com.ctseducare.condominium.dto'
+
+public class SyndicDTO {
+
+    private Integer id;
+    private String name;
+    private List<CondominiumDTO> condominiums = new ArrayList<>(0);
+
+    // Getters and setters
+    
+}
+
+
+Service
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'SyndicService.java' no pacote 'com.ctseducare.condominium.service'
+
+- Adicionar o método 'create' no arquivo 'SyndicService.java'
+
+public class SyndicService {
+
+    private final SyndicDAO dao;
+
+    SyndicService() {
+        dao = new SyndicDAO();
+    }
+
+    public SyndicDTO create(SyndicDTO dto) throws Exception {
+        Syndic syndic = dtoToModel(dto);
+        dao.create(syndic);
+        dto.setId(syndic.getId());
+        return dto;
+    }
+
+    private Syndic dtoToModel(SyndicDTO dto) {
+        Syndic syndic = new Syndic();
+        syndic.setName(dto.getName());
+
+        Set<Condominium> condominiums = dto.getCondominiums().stream().map(c -> {
+            Condominium c2 = new Condominium();
+            c2.setName(c.getName());
+            return c2;
+        }).collect(Collectors.toSet());
+
+        syndic.setCondominiums(condominiums);
+
+        return syndic;
+    }
+
+}
+
+
+Testando a inserção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'SyndicServiceCreateTest.java'
+
+public class SyndicServiceCreateTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO c1 = new CondominiumDTO();
+        c1.setName("Condominio 1");
+
+        SyndicDTO s = new SyndicDTO();
+        s.setName("Eros Vitor");
+        s.getCondominiums().add(c1);
+
+        SyndicService service = new SyndicService();
+        try {
+            service.create(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+  Obs: Será criado o condomínio, o síndico e a associação síndico x condomínio automaticamente.
+

@@ -1,0 +1,69 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - CRUD - UPDATE
+====================================================================================================
+
+
+Método para alterar dados
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'update' na classe 'CondominiumDAO.java'
+
+    ...
+    public void update(Condominium condominium) throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        Transaction transaction = null;
+        try {
+            transaction = session.beginTransaction();
+
+            session.update(condominium);
+            session.flush();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+    }
+    ...
+
+
+Serviço
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'update' na classe 'CondominiumService.java'
+
+    ...
+    public void update(CondominiumDTO dto) throws Exception {
+        Condominium condominium = new Condominium();
+        condominium.setId(dto.getId());
+        condominium.setName(dto.getName());
+
+        dao.update(condominium);
+    }
+    ...
+
+
+Testando a alteração dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'CondominiumServiceUpdateTest.java'
+
+public class CondominiumServiceUpdateTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setId(2);
+        dto.setName("Condomínio Residencial Jatobá");
+
+        CondominiumService service = new CondominiumService();
+        try {
+            service.update(dto);
+            System.out.println(dto.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+

@@ -1,0 +1,102 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - ONE-TO-MANY - CREATE
+====================================================================================================
+
+
+DTO
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantDTO.java' no pacote 'com.ctseducare.condominium.dto'
+
+public class TenantDTO {
+
+    private Integer id;
+    private String name;
+    private List<TenantDependentDTO> dependents = new ArrayList<>(0);
+    private Integer idCondominium;
+
+    // Getters and setters
+    
+}
+
+
+- Criar o arquivo 'TenantDependentDTO.java' no pacote 'com.ctseducare.condominium.dto'
+
+public class TenantDependentDTO {
+
+    private Integer id;
+    private String name;
+
+    // Getters and setters
+}
+
+
+Service
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantService.java' no pacote 'com.ctseducare.condominium.service'
+
+- Adicionar o método 'create' no arquivo 'TenantService.java'
+
+public class TenantService {
+
+    private final TenantDAO dao;
+
+    TenantService() {
+        dao = new TenantDAO();
+    }
+
+    public TenantDTO create(TenantDTO dto) throws Exception {
+        Tenant tenant = dtoToModel(dto);
+        dao.create(tenant);
+        dto.setId(tenant.getId());
+        return dto;
+    }
+
+    private Tenant dtoToModel(TenantDTO dto) {
+        Tenant tenant = new Tenant();
+        tenant.setName(dto.getName());
+        tenant.setIdCondominium(dto.getIdCondominium());
+
+        Set<TenantDependent> dependents = dto.getDependents().stream().map(d -> {
+            TenantDependent td = new TenantDependent();
+            td.setName(d.getName());
+            td.setTenant(tenant);
+            return td;
+        }).collect(Collectors.toSet());
+
+        tenant.setDependents(dependents);
+
+        return tenant;
+    }
+
+}
+
+
+Testando a inserção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantServiceCreateTest.java'
+
+public class TenantServiceCreateTest {
+
+    public static void main(String[] args) {
+        TenantDependentDTO td1 = new TenantDependentDTO();
+        td1.setName("Daniele");
+        TenantDependentDTO td2 = new TenantDependentDTO();
+        td2.setName("Talita");
+
+        TenantDTO t = new TenantDTO();
+        t.setName("Eros Vitor");
+        t.getDependents().add(td1);
+        t.getDependents().add(td2);
+        t.setIdCondominium(1);  // 1 - DEFAULT
+
+        TenantService service = new TenantService();
+        try {
+            service.create(t);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+
+

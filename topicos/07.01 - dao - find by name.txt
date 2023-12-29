@@ -1,0 +1,64 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - DAO - FIND BY NAME
+====================================================================================================
+
+
+CondominumDAO
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'findByName' na classe 'CondominiumDAO'
+
+    public Condominium findByName(String name) {
+        String hql = "FROM Condominium WHERE name = :name";
+
+        Session session = HibernateUtils.getSessionFactory().openSession();
+
+        TypedQuery<Condominium> typedQuery = session.createQuery(hql, Condominium.class);
+        typedQuery.setParameter("name", name);
+
+        Condominium condominium = typedQuery.getSingleResult();
+
+        session.close();
+
+        return condominium;
+    }
+
+
+CondominiunService
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'findByName' na classe 'CondominiumService'
+
+    ...
+    public CondominiumDTO findByName(String name) {
+        Condominium condominium = dao.findByName(name);
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setId(condominium.getId());
+        dto.setName(condominium.getName());
+
+        return dto;
+    }
+    ...
+    
+
+Testando a busca por nome
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'CondominiumServiceFindByNameTest.java'
+
+public class CondominiumServiceFindByNameTest {
+
+    public static void main(String[] args) {
+        CondominiumDTO dto = new CondominiumDTO();
+        dto.setName("Condomínio Rosa dos Ventos");
+
+        CondominiumService service = new CondominiumService();
+        try {
+            service.create(dto);
+
+            CondominiumDTO returned = service.findByName("Condominio Rosa dos Ventos");
+            System.out.println(returned.getId() + ", " + returned.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+

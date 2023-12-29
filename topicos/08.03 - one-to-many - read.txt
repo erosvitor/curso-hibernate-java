@@ -1,0 +1,76 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - ONE-TO-MANY - READ
+====================================================================================================
+
+
+TenantDAO
+----------------------------------------------------------------------------------------------------
+- Adicionar o metódo 'readAllWithDependents' na classe TenantDAO
+
+    ...
+    public List<Tenant> readAllWithYourDependents() throws Exception {
+        Session session = HibernateUtils.getSessionFactory().openSession();
+        List<Tenant> tenants;
+        try {
+            tenants = session.createQuery("FROM Tenant t JOIN FETCH t.dependents", Tenant.class).list();
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            session.close();
+        }
+        return tenants;
+    }
+    ...
+
+
+Service
+----------------------------------------------------------------------------------------------------
+- Adicionar o método 'readAllWithYourDependents' no arquivo 'TenantService.java'
+
+    ...
+    public List<TenantDTO> readAllWithYourDependents() throws Exception {
+        List<Tenant> tenants = dao.readAllWithYourDependents();
+        return tenants.stream().map(this::modelToDto).toList();
+    }
+
+    private TenantDTO modelToDto(Tenant model) {
+        TenantDTO tenant = new TenantDTO();
+        tenant.setId(model.getId());
+        tenant.setName(model.getName());
+
+        List<TenantDependentDTO> dependents = model.getDependents().stream().map( d -> {
+            TenantDependentDTO td = new TenantDependentDTO();
+            td.setId(d.getId());
+            td.setName(d.getName());
+            return td;
+        }).toList();
+
+        tenant.setDependents(dependents);
+
+        return tenant;
+    }
+    ...
+
+
+Testando a seleção dos dados
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'TenantServiceReadTest.java'
+
+public class TenantServiceReadTest {
+
+    public static void main(String[] args) {
+        TenantService service = new TenantService();
+        try {
+            List<TenantDTO> tenants = service.readAllWithYourDependents();
+            tenants.forEach(t -> {
+                System.out.println(t.getId() + "," + t.getName());
+                t.getDependents().forEach(d -> System.out.println("--> " + d.getName()));
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+}
+
+

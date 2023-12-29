@@ -1,0 +1,141 @@
+====================================================================================================
+CURSO HIBERNATE E JAVA - PROJECT
+====================================================================================================
+
+
+Projeto
+----------------------------------------------------------------------------------------------------
+- Abrir o 'IntelliJ'
+
+- Clicar no botão 'New Project'
+
+- Preencher os seguintes campos
+
+  Name: template-condominium
+  Language: Java
+  Build system: Maven
+  
+  Advanced Settings
+    GroupId: com.ctseducare
+    ArtifactId: template-condominium
+    
+- Clicar no botão 'Create'
+
+
+Dependências
+----------------------------------------------------------------------------------------------------
+- Adicionar as seguintes dependências
+
+        ...
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>6.4.1.Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>6.4.1.Final</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.14</version>
+        </dependency>
+        ...
+
+        
+Configurando o Hibernate
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'hibernate.properties' no folder '/src/main/resources'
+
+hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+
+hibernate.connection.driver_class=com.mysql.cj.jdbc.Driver
+hibernate.connection.url=jdbc:mysql://localhost:3306/condominium
+hibernate.connection.username=root
+hibernate.connection.password=root
+
+hibernate.show_sql=false
+
+hibernate.c3p0.min_size=5
+hibernate.c3p0.max_size=20
+hibernate.c3p0.timeout=3000
+hibernate.c3p0.max_statements=30
+
+
+Inicializando o Hibernate
+----------------------------------------------------------------------------------------------------
+- Criar o pacote 'com.ctseducare.condominium.hibernate'
+
+- Criar o arquivo 'HibernateUtils.java'
+
+public class HibernateUtils {
+
+  private static SessionFactory sessionFactory = null;
+
+  private HibernateUtils() {}
+
+  public static SessionFactory getSessionFactory() {
+    if (sessionFactory == null) {
+      StandardServiceRegistryBuilder registryBuilder = new StandardServiceRegistryBuilder();
+
+      registryBuilder.loadProperties("hibernate.properties");
+
+      StandardServiceRegistry registry = registryBuilder.build();
+
+      try {
+        MetadataSources metadataSources = new MetadataSources(registry);
+
+        sessionFactory = metadataSources.buildMetadata().buildSessionFactory();
+      } catch (Exception e) {
+        e.printStackTrace();
+        StandardServiceRegistryBuilder.destroy(registry);
+      }
+    }
+    return sessionFactory;
+  }
+
+  public static void shutdown() { 
+    if (sessionFactory != null) {
+      sessionFactory.close();
+    }  
+  }
+
+}
+
+
+Testando configuração do Hibernate
+----------------------------------------------------------------------------------------------------
+- Criar o arquivo 'HibernateUtilsTest.java' no pacote 'com.ctseducare.condominium.hibernate'
+
+public class HibernateUtilsTest {
+
+  public static void main(String[] args) {
+    Session session = null;
+    try {
+      session = HibernateUtils.getSessionFactory().openSession();
+      System.out.println("Hibernate OK");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    if (session != null) {
+      session.close();
+    }
+    HibernateUtils.shutdown();
+  }
+
+}
+
+- Executar o arquivo HibernateUtilsTest
+
+  Obs: A mensagem 'Hibernate OK' deve ser exibida no console
+
